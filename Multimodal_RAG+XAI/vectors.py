@@ -1,9 +1,9 @@
 # vectors.py
 
 import os
-import base64
 from langchain_community.document_loaders import UnstructuredPDFLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+
 from langchain_community.embeddings import HuggingFaceBgeEmbeddings
 from langchain_community.vectorstores import Qdrant
 
@@ -32,6 +32,7 @@ class EmbeddingsManager:
         self.qdrant_url = qdrant_url
         self.collection_name = collection_name
 
+        # Initialize the embeddings model
         self.embeddings = HuggingFaceBgeEmbeddings(
             model_name=self.model_name,
             model_kwargs={"device": self.device},
@@ -57,6 +58,7 @@ class EmbeddingsManager:
         if not docs:
             raise ValueError("No documents were loaded from the PDF.")
 
+        # Split the document into chunks
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000, chunk_overlap=250
         )
@@ -77,4 +79,3 @@ class EmbeddingsManager:
             raise ConnectionError(f"Failed to connect to Qdrant: {e}")
 
         return "✅ Vector DB Successfully Created and Stored in Qdrant!"
-

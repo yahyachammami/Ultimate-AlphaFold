@@ -1,13 +1,14 @@
 # chatbot.py
-
 import os
+import ollama
+import base64
+from PIL import Image
+import io
 from langchain_community.embeddings import HuggingFaceBgeEmbeddings
 from langchain_community.vectorstores import Qdrant
-from langchain_ollama import ChatOllama
 from qdrant_client import QdrantClient
-from langchain import PromptTemplate
 from langchain.chains import RetrievalQA
-import streamlit as st
+from langchain import PromptTemplate
 
 class ChatbotManager:
     def __init__(
@@ -15,22 +16,13 @@ class ChatbotManager:
         model_name: str = "BAAI/bge-small-en",
         device: str = "cpu",
         encode_kwargs: dict = {"normalize_embeddings": True},
-        llm_model: str = "llama3.2:3b",
+        llm_model: str = "llama3.2-vision",
         llm_temperature: float = 0.7,
         qdrant_url: str = "http://localhost:6333",
         collection_name: str = "vector_db",
     ):
         """
-        Initializes the ChatbotManager with embedding models, LLM, and vector store.
-
-        Args:
-            model_name (str): The HuggingFace model name for embeddings.
-            device (str): The device to run the model on ('cpu' or 'cuda').
-            encode_kwargs (dict): Additional keyword arguments for encoding.
-            llm_model (str): The local LLM model name for ChatOllama.
-            llm_temperature (float): Temperature setting for the LLM.
-            qdrant_url (str): The URL for the Qdrant instance.
-            collection_name (str): The name of the Qdrant collection.
+        Initializes the ChatbotManager with embedding models, retrieval, and vector store.
         """
         self.model_name = model_name
         self.device = device
@@ -47,28 +39,8 @@ class ChatbotManager:
             encode_kwargs=self.encode_kwargs,
         )
 
-        # Initialize Local LLM
-        self.llm = ChatOllama(
-            model=self.llm_model,
-            temperature=self.llm_temperature,
-            # Add other parameters if needed
-        )
-
-        # Define the prompt template
-        self.prompt_template = """Use the following pieces of information to answer the user's question.
-If you don't know the answer, just say that you don't know, don't try to make up an answer.
-
-Context: {context}
-Question: {question}
-
-Only return the helpful answer. Answer must be detailed and well explained.
-Helpful answer:
-"""
-
         # Initialize Qdrant client
-        self.client = QdrantClient(
-            url=self.qdrant_url, prefer_grpc=False
-        )
+        self.client = QdrantClient(url=self.qdrant_url, prefer_grpc=False)
 
         # Initialize the Qdrant vector store
         self.db = Qdrant(
@@ -77,41 +49,59 @@ Helpful answer:
             collection_name=self.collection_name
         )
 
+        # Initialize the retriever
+        self.retriever = self.db.as_retriever(search_kwargs={"k": 3})  # Retrieve top 3 relevant docs
+
+        # Define the prompt template
+        self.prompt_template = """Use the following retrieved context to answer the user's question. If you don't know, just say so.
+
+Context: {context}
+Question: {question}
+
+Helpful Answer:
+"""
+
         # Initialize the prompt
         self.prompt = PromptTemplate(
             template=self.prompt_template,
             input_variables=['context', 'question']
         )
 
-        # Initialize the retriever
-        self.retriever = self.db.as_retriever(search_kwargs={"k": 1})
-
-        # Define chain type kwargs
-        self.chain_type_kwargs = {"prompt": self.prompt}
-
-        # Initialize the RetrievalQA chain with return_source_documents=False
-        self.qa = RetrievalQA.from_chain_type(
-            llm=self.llm,
-            chain_type="stuff",
-            retriever=self.retriever,
-            return_source_documents=False,  # Set to False to return only 'result'
-            chain_type_kwargs=self.chain_type_kwargs,
-            verbose=False
-        )
-
-    def get_response(self, query: str) -> str:
+    def preprocess_image(self, image_path: str) -> str:
         """
-        Processes the user's query and returns the chatbot's response.
+        Converts the image to Base64 format for compatibility with llama3.2-vision.
+        """
+        with open(image_path, "rb") as image_file:
+            base64_image = base64.b64encode(image_file.read()).decode("utf-8")
+        return base64_image
 
-        Args:
-            query (str): The user's input question.
-
-        Returns:
-            str: The chatbot's response.
+    def get_response(self, query: str, image_path: str = None) -> str:
+        """
+        Processes the user's query using retrieval + LLM and returns a response.
+        Handles both text from the document and image input for multimodal interaction.
         """
         try:
-            response = self.qa.run(query)
-            return response  # 'response' is now a string containing only the 'result'
+            # Retrieve relevant documents from the vector store
+            retrieved_docs = self.retriever.get_relevant_documents(query)
+            context = "\n".join([doc.page_content for doc in retrieved_docs])
+
+            # Prepare messages for LLM
+            messages = [{
+                'role': 'user',
+                'content': self.prompt.format(context=context, question=query),
+            }]
+
+            if image_path and os.path.exists(image_path):
+                # Convert image to Base64 before sending it to the model
+                base64_image = self.preprocess_image(image_path)
+                messages[0]['images'] = [base64_image]
+
+            # Send to Ollama LLM (text + image)
+            response = ollama.chat(
+                model=self.llm_model,
+                messages=messages
+            )
+            return response.get("message", {}).get("content", "⚠️ No response received.")
+
         except Exception as e:
-            st.error(f"⚠️ An error occurred while processing your request: {e}")
-            return "⚠️ Sorry, I couldn't process your request at the moment."
+            return f"⚠️ An error occurred while processing your request: {e}"
