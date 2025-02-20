@@ -173,7 +173,7 @@ elif choice == "📧 Contact":
     st.title("📬 Contact Us")
     
     # Full path to your HTML file
-    html_file_path = r"C:\Users\lenovo\Desktop\Nouveau dossier\Ultimate-AlphaFold\Multimodal_RAG+XAI\combined_interaction.html"
+    html_file_path = "combined_interaction.html"
     
     # Check if the file exists
     if os.path.exists(html_file_path):
