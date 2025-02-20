@@ -30,6 +30,12 @@ if 'chatbot_manager' not in st.session_state:
 if 'messages' not in st.session_state:
     st.session_state['messages'] = []
 
+if 'embeddings_created' not in st.session_state:
+    st.session_state['embeddings_created'] = False
+
+if 'uploaded_image_path' not in st.session_state:
+    st.session_state['uploaded_image_path'] = None
+
 # Set the page configuration to wide layout and add a title
 st.set_page_config(
     page_title="Document Buddy App",
@@ -48,9 +54,6 @@ with st.sidebar:
     # Navigation Menu
     menu = ["🏠 Home", "🤖 Chatbot", "📽️​ Vizualisation"]
     choice = st.selectbox("Navigate", menu)
-
-import streamlit as st
-from PIL import Image
 
 # Custom Styling
 st.markdown(
@@ -83,9 +86,6 @@ if choice == "🏠 Home":
     st.markdown('<p class="title">📄 Ultimate AlphaFold</p>', unsafe_allow_html=True)
     st.markdown('<p class="subtitle">Explaining Drug Interactions With Multimodal RAG 🚀</p>', unsafe_allow_html=True)
     
-    # Add an image (optional)
-    #image = Image.open("C:\\Users\\yahya\\Desktop\\last version\\Ultimate-AlphaFold\\loogo.png")
-    #st.image(image, use_container_width=True)
     st.markdown(
         """
         <div class="highlight">
@@ -112,7 +112,7 @@ elif choice == "🤖 Chatbot":
     st.markdown("---")
     
     # Create three columns
-    col1, col2= st.columns(2)
+    col1, col2 = st.columns(2)
 
     # Column 1: File Uploader and Preview
     with col1:
@@ -151,7 +151,8 @@ elif choice == "🤖 Chatbot":
                         device="cpu",
                         encode_kwargs={"normalize_embeddings": True},
                         qdrant_url="http://localhost:6333",
-                        collection_name="vector_db"
+                        collection_name="vector_db",
+                        #Images_collection_name="Images_vector_db"
                     )
                     
                     with st.spinner("🔄 Embeddings are in process..."):
@@ -159,6 +160,9 @@ elif choice == "🤖 Chatbot":
                         result = embeddings_manager.create_embeddings(st.session_state['temp_pdf_path'])
                         time.sleep(1)  # Optional: To show spinner for a bit longer
                     st.success(result)
+                    
+                    # Set embeddings_created to True
+                    st.session_state['embeddings_created'] = True
                     
                     # Initialize the ChatbotManager after embeddings are created
                     if st.session_state['chatbot_manager'] is None:
@@ -192,6 +196,17 @@ elif choice == "🤖 Chatbot":
         for msg in st.session_state['messages']:
             st.chat_message(msg['role']).markdown(msg['content'])
 
+        # Image upload (manual upload before chat)
+        if st.session_state['uploaded_image_path'] is None:
+            uploaded_image = st.file_uploader("Upload an image (optional)", type=["jpg", "jpeg", "png"])
+            if uploaded_image is not None:
+                # Save the uploaded image to a temporary location
+                image_path = "temp_image.jpg"
+                with open(image_path, "wb") as f:
+                    f.write(uploaded_image.getbuffer())
+                st.session_state['uploaded_image_path'] = image_path
+                st.success("🖼️ Image uploaded successfully!")
+
         # User input
         if user_input := st.chat_input("Type your message here..."):
             # Display user message
@@ -201,7 +216,10 @@ elif choice == "🤖 Chatbot":
             with st.spinner("🤖 Responding..."):
                 try:
                     # Get the chatbot response using the ChatbotManager
-                    answer = st.session_state['chatbot_manager'].get_response(user_input)
+                    answer = st.session_state['chatbot_manager'].get_response(
+                        user_input, 
+                        image_path=st.session_state['uploaded_image_path']
+                    )
                     time.sleep(1)  # Simulate processing time
                 except Exception as e:
                     answer = f"⚠️ An error occurred while processing your request: {e}"

@@ -1,3 +1,5 @@
+# chatbot.py
+
 import os
 from langchain_community.embeddings import HuggingFaceBgeEmbeddings
 from langchain_community.vectorstores import Qdrant
@@ -7,7 +9,8 @@ from langchain.chains import RetrievalQA
 from langchain_core.runnables import RunnableLambda
 import streamlit as st
 from groq import Groq  # Using the official Groq Python library
- 
+import base64
+
 class ChatbotManager:
     def __init__(
         self,
@@ -26,52 +29,52 @@ class ChatbotManager:
         self.llm_temperature = llm_temperature
         self.qdrant_url = qdrant_url
         self.collection_name = collection_name
- 
+
         # Initialize Embeddings
         self.embeddings = HuggingFaceBgeEmbeddings(
             model_name=self.model_name,
             model_kwargs={"device": self.device},
             encode_kwargs=self.encode_kwargs,
         )
- 
+
         # Initialize Qdrant client
         self.client = QdrantClient(
             url=self.qdrant_url, prefer_grpc=False
         )
- 
+
         # Initialize the Qdrant vector store
         self.db = Qdrant(
             client=self.client,
             embeddings=self.embeddings,
             collection_name=self.collection_name
         )
- 
+
         # Define the prompt template
         self.prompt_template = """Use the following pieces of information to answer the user's question.
 If you don't know the answer, just say that you don't know, don't try to make up an answer.
- 
+
 Context: {context}
 Question: {question}
- 
+
 Only return the helpful answer. Answer must be detailed and well explained.
 Helpful answer:
 """
- 
+
         # Initialize the prompt
         self.prompt = PromptTemplate(
             template=self.prompt_template,
             input_variables=['context', 'question']
         )
- 
+
         # Initialize the retriever
         self.retriever = self.db.as_retriever(search_kwargs={"k": 1})
- 
+
         # Define chain type kwargs
         self.chain_type_kwargs = {"prompt": self.prompt}
- 
+
         # Create a Runnable wrapper for the Groq LLM
         groq_llm = RunnableLambda(self._groq_llm)
- 
+
         # Initialize the RetrievalQA chain with return_source_documents=False
         self.qa = RetrievalQA.from_chain_type(
             llm=groq_llm,  # Using the wrapped Groq API-based LLM
@@ -81,32 +84,53 @@ Helpful answer:
             chain_type_kwargs=self.chain_type_kwargs,
             verbose=False
         )
- 
-    def _groq_llm(self, prompt: str, **kwargs) -> str:
+
+    def _groq_llm(self, prompt: str, image_path: str = None, **kwargs) -> str:
         """
         Calls the Groq API to generate a response using the Groq Python library.
+        Supports both text and image inputs.
         """
-        from groq import Groq  # Ensure the import is here or at the top of your file
+        from groq import Groq
+
         # Convert prompt to a string if it's not already
         prompt_text = str(prompt)
-    
+
         # Initialize the Groq client using the API key from environment variables.
         client = Groq(api_key="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")
+
+        # Prepare the messages for the API call
+        messages = [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": prompt_text}
+        ]
+
+        # If an image is provided, add it to the messages
+        if image_path:
+            with open(image_path, "rb") as image_file:
+                encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
+                messages.append({
+                    "role": "user",
+                    "content": f"data:image/jpeg;base64,{encoded_image}"
+                })
+
+        # Generate the response using the Groq API
         chat_completion = client.chat.completions.create(
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": prompt_text}  # Use the string version
-            ],
+            messages=messages,
             model=self.llm_model,
             temperature=self.llm_temperature,
         )
         return chat_completion.choices[0].message.content.strip()
- 
-    def get_response(self, query: str) -> str:
+
+    def get_response(self, query: str, image_path: str = None) -> str:
         """
         Processes the user's query and returns the chatbot's response.
+        Supports both text and image inputs.
         """
         try:
+            # Combine the query and image context
+            if image_path:
+                query = f"{query}\n\n[Image provided for context]"
+
             response = self.qa.run(query)
             return response  # 'response' is a string containing the result
         except Exception as e:
