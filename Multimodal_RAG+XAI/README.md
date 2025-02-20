@@ -129,17 +129,6 @@ git push origin feature/YourFeatureName
 
 7.	Create a Pull Request: Navigate to the original repository and create a pull request from your fork.
 
-### 📄 License
-
-This project is licensed under the MIT License.
-
-### 📫 Contact
-
-•	Email: aianytime07@gmail.com ✉️
-
-Feel free to reach out for any queries, suggestions, or contributions. Your feedback is invaluable!
-
-© 2024 Document Buddy App by AI Anytime. All rights reserved. 🛡️
 
 ### 🔗 Useful Links
 
@@ -150,6 +139,4 @@ Feel free to reach out for any queries, suggestions, or contributions. Your feed
 
 •	Qdrant Documentation: https://qdrant.tech/documentation/
 
-•	ChatOllama Documentation: https://github.com/langchain-ai/langchain-llms#ollama
 
-Happy coding! 🚀✨
