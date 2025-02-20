@@ -91,7 +91,7 @@ Helpful answer:
         prompt_text = str(prompt)
     
         # Initialize the Groq client using the API key from environment variables.
-        client = Groq(api_key="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")
+        client = Groq(api_key="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")
         chat_completion = client.chat.completions.create(
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},

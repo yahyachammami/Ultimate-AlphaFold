@@ -40,32 +40,75 @@ st.set_page_config(
 # Sidebar
 with st.sidebar:
     # You can replace the URL below with your own logo URL or local image path
-    st.image("loogo.png", use_container_width=True)
-    st.markdown("### 📚 Protein and drug interaction")
+    st.image("C:/Users/yahya/Desktop/last version/Ultimate-AlphaFold/loogo.png", use_container_width=True)
+
+    st.markdown("### 📚 Drug Interaction")
     st.markdown("---")
     
     # Navigation Menu
-    menu = ["🏠 Home", "🤖 Chatbot", "Vizualisation"]
+    menu = ["🏠 Home", "🤖 Chatbot", "📽️​ Vizualisation"]
     choice = st.selectbox("Navigate", menu)
+
+import streamlit as st
+from PIL import Image
+
+# Custom Styling
+st.markdown(
+    """
+    <style>
+        .title {
+            font-size: 2.5em;
+            font-weight: bold;
+            text-align: center;
+            color: #4CAF50;
+        }
+        .subtitle {
+            font-size: 1.5em;
+            text-align: center;
+            color: #666;
+        }
+        .highlight {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 3px 3px 12px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
 # Home Page
 if choice == "🏠 Home":
-    st.title("📄 Ultimate AlphaFold")
-    st.markdown("""
-    Welcome to **Ultimate AlphaFold**! 🚀
-
-    **Built using Open Source Stack (Llama 3.2, BGE Embeddings, and Qdrant running locally within a Docker Container.)**
-
-    - **Upload Documents**: Easily upload your PDF documents.
-    - **Summarize**: Get concise summaries of your documents.
-    - **Chat**: Interact with your documents through our intelligent chatbot.
-
-    Enhance your document management experience with Ultimate AlphaFold! 😊
-    """)
-
+    st.markdown('<p class="title">📄 Ultimate AlphaFold</p>', unsafe_allow_html=True)
+    st.markdown('<p class="subtitle">Explaining Drug Interactions With Multimodal RAG 🚀</p>', unsafe_allow_html=True)
+    
+    # Add an image (optional)
+    #image = Image.open("C:\\Users\\yahya\\Desktop\\last version\\Ultimate-AlphaFold\\loogo.png")
+    #st.image(image, use_container_width=True)
+    st.markdown(
+        """
+        <div class="highlight">
+        Welcome to <b>Ultimate AlphaFold</b>, your AI-powered document assistant! 😊
+        
+        <b>Built using Open Source Stack:</b>
+        - 🦙 Llama 3.2 Vision
+        - 🧠 BGE Embeddings
+        - 📦 Qdrant (running locally within a Docker Container)
+        
+        **Core Features:**
+        - 📂 <b>Upload Documents</b>: Easily upload your PDF documents.
+        - ✨ <b>Summarize</b>: Get concise, AI-generated summaries of your documents.
+        - 💬 <b>Chat</b>: Interact with your documents through our intelligent chatbot.
+        
+        Experience the future of **Drug Discovery** with **Ultimate AlphaFold**! 🚀
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 # Chatbot Page
 elif choice == "🤖 Chatbot":
-    st.title("🤖 Chatbot Interface (Llama 3.2 RAG 🦙)")
+    st.title("🤖 Ask the PDFs about the reason of the interaction.")
     st.markdown("---")
     
     # Create three columns
@@ -169,7 +212,7 @@ elif choice == "🤖 Chatbot":
 
 # Contact Page
 
-elif choice == "Vizualisation":
+elif choice == "📽️​ Vizualisation":
     st.title("Protein and Drug Interaction Visualization")
     
     # Full path to your HTML file
