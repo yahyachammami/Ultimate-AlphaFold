@@ -40,7 +40,7 @@ st.set_page_config(
 # Sidebar
 with st.sidebar:
     # You can replace the URL below with your own logo URL or local image path
-    st.image("logo.png", use_column_width=True)
+    st.image("logo.png", use_container_width=True)
     st.markdown("### 📚 Your Personal Document Assistant")
     st.markdown("---")
     
@@ -173,7 +173,7 @@ elif choice == "📧 Contact":
     st.title("📬 Contact Us")
     
     # Full path to your HTML file
-    html_file_path = r"C:\Users\yahya\Desktop\week2\rag\Document-Buddy-App\combined_interaction.html"
+    html_file_path = r"C:\Users\lenovo\Desktop\Nouveau dossier\Ultimate-AlphaFold\Multimodal_RAG+XAI\combined_interaction.html"
     
     # Check if the file exists
     if os.path.exists(html_file_path):
