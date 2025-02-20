@@ -40,7 +40,7 @@ st.set_page_config(
 # Sidebar
 with st.sidebar:
     # You can replace the URL below with your own logo URL or local image path
-    st.image(r"C:\Users\lenovo\Desktop\Nouveau dossier\Ultimate-AlphaFold\loogo.png", use_container_width=True)
+    st.image("loogo.png", use_container_width=True)
     st.markdown("### 📚 Protein and drug interaction")
     st.markdown("---")
     
@@ -123,7 +123,7 @@ elif choice == "🤖 Chatbot":
                             model_name="BAAI/bge-small-en",
                             device="cpu",
                             encode_kwargs={"normalize_embeddings": True},
-                            llm_model="llama3.2:3b",
+                            llm_model="llama-3.2-11b-vision-preview",
                             llm_temperature=0.7,
                             qdrant_url="http://localhost:6333",
                             collection_name="vector_db"
