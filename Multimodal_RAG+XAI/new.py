@@ -40,19 +40,19 @@ st.set_page_config(
 # Sidebar
 with st.sidebar:
     # You can replace the URL below with your own logo URL or local image path
-    st.image("logo.png", use_container_width=True)
-    st.markdown("### 📚 Your Personal Document Assistant")
+    st.image(r"C:\Users\lenovo\Desktop\Nouveau dossier\Ultimate-AlphaFold\loogo.png", use_container_width=True)
+    st.markdown("### 📚 Protein and drug interaction")
     st.markdown("---")
     
     # Navigation Menu
-    menu = ["🏠 Home", "🤖 Chatbot", "📧 Contact"]
+    menu = ["🏠 Home", "🤖 Chatbot", "Vizualisation"]
     choice = st.selectbox("Navigate", menu)
 
 # Home Page
 if choice == "🏠 Home":
-    st.title("📄 Document Buddy App")
+    st.title("📄 Ultimate AlphaFold")
     st.markdown("""
-    Welcome to **Document Buddy App**! 🚀
+    Welcome to **Ultimate AlphaFold**! 🚀
 
     **Built using Open Source Stack (Llama 3.2, BGE Embeddings, and Qdrant running locally within a Docker Container.)**
 
@@ -60,7 +60,7 @@ if choice == "🏠 Home":
     - **Summarize**: Get concise summaries of your documents.
     - **Chat**: Interact with your documents through our intelligent chatbot.
 
-    Enhance your document management experience with Document Buddy! 😊
+    Enhance your document management experience with Ultimate AlphaFold! 😊
     """)
 
 # Chatbot Page
@@ -69,7 +69,7 @@ elif choice == "🤖 Chatbot":
     st.markdown("---")
     
     # Create three columns
-    col1, col2, col3 = st.columns(3)
+    col1, col2= st.columns(2)
 
     # Column 1: File Uploader and Preview
     with col1:
@@ -139,41 +139,41 @@ elif choice == "🤖 Chatbot":
                     st.error(f"An unexpected error occurred: {e}")
 
     # Column 3: Chatbot Interface
-    with col3:
-        st.header("💬 Chat with Document")
-        
-        if st.session_state['chatbot_manager'] is None:
-            st.info("🤖 Please upload a PDF and create embeddings to start chatting.")
-        else:
-            # Display existing messages
-            for msg in st.session_state['messages']:
-                st.chat_message(msg['role']).markdown(msg['content'])
 
-            # User input
-            if user_input := st.chat_input("Type your message here..."):
-                # Display user message
-                st.chat_message("user").markdown(user_input)
-                st.session_state['messages'].append({"role": "user", "content": user_input})
+    st.header("💬 Chat with Document")
+    
+    if st.session_state['chatbot_manager'] is None:
+        st.info("🤖 Please upload a PDF and create embeddings to start chatting.")
+    else:
+        # Display existing messages
+        for msg in st.session_state['messages']:
+            st.chat_message(msg['role']).markdown(msg['content'])
 
-                with st.spinner("🤖 Responding..."):
-                    try:
-                        # Get the chatbot response using the ChatbotManager
-                        answer = st.session_state['chatbot_manager'].get_response(user_input)
-                        time.sleep(1)  # Simulate processing time
-                    except Exception as e:
-                        answer = f"⚠️ An error occurred while processing your request: {e}"
-                
-                # Display chatbot message
-                st.chat_message("assistant").markdown(answer)
-                st.session_state['messages'].append({"role": "assistant", "content": answer})
+        # User input
+        if user_input := st.chat_input("Type your message here..."):
+            # Display user message
+            st.chat_message("user").markdown(user_input)
+            st.session_state['messages'].append({"role": "user", "content": user_input})
+
+            with st.spinner("🤖 Responding..."):
+                try:
+                    # Get the chatbot response using the ChatbotManager
+                    answer = st.session_state['chatbot_manager'].get_response(user_input)
+                    time.sleep(1)  # Simulate processing time
+                except Exception as e:
+                    answer = f"⚠️ An error occurred while processing your request: {e}"
+            
+            # Display chatbot message
+            st.chat_message("assistant").markdown(answer)
+            st.session_state['messages'].append({"role": "assistant", "content": answer})
 
 # Contact Page
 
-elif choice == "📧 Contact":
-    st.title("📬 Contact Us")
+elif choice == "Vizualisation":
+    st.title("Protein and Drug Interaction Visualization")
     
     # Full path to your HTML file
-    html_file_path = r"C:\Users\lenovo\Desktop\Nouveau dossier\Ultimate-AlphaFold\Multimodal_RAG+XAI\combined_interaction.html"
+    html_file_path = "combined_interaction.html"
     
     # Check if the file exists
     if os.path.exists(html_file_path):
