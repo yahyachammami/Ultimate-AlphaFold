@@ -198,13 +198,10 @@ elif choice == "🤖 Chatbot":
 
         # Image upload (manual upload before chat)
         if st.session_state['uploaded_image_path'] is None:
-            uploaded_image = st.file_uploader("Upload an image (optional)", type=["jpg", "jpeg", "png"])
+            uploaded_image = st.file_uploader("Upload an image of the Drug interactions", type=["jpg", "jpeg", "png"])
             if uploaded_image is not None:
-                # Save the uploaded image to a temporary location
-                image_path = "temp_image.jpg"
-                with open(image_path, "wb") as f:
-                    f.write(uploaded_image.getbuffer())
-                st.session_state['uploaded_image_path'] = image_path
+                st.image(uploaded_image, caption="Uploaded Image", use_container_width=True)
+            
                 st.success("🖼️ Image uploaded successfully!")
 
         # User input
