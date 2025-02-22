@@ -96,7 +96,7 @@ Helpful answer:
         prompt_text = str(prompt)
 
         # Initialize the Groq client using the API key from environment variables.
-        client = Groq(api_key="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")
+        client = Groq(api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
 
         # Prepare the messages for the API call
         messages = [
